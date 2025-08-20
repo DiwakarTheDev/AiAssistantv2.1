@@ -1,0 +1,13 @@
+How to Run:
+Install dependencies:"pip install torch sentence-transformers wikipedia pyttsx3 SpeechRecognition nltk"
+
+bash
+pip install torch sentence-transformers wikipedia pyttsx3 SpeechRecognition nltk
+Train model:
+
+bash
+python train.py
+Run assistant:
+
+bash
+python main.py

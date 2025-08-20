@@ -1,0 +1,22 @@
+import json
+import os
+from config import MEMORY_FILE
+
+def save_memory(user_id, key, value)
+    if os.path.exists(MEMORY_FILE)
+        with open(MEMORY_FILE, 'r') as f
+            memory = json.load(f)
+    else
+        memory = {}
+    if user_id not in memory
+        memory[user_id] = {}
+    memory[user_id][key] = value
+    with open(MEMORY_FILE, 'w') as f
+        json.dump(memory, f)
+
+def load_memory(user_id, key)
+    if os.path.exists(MEMORY_FILE)
+        with open(MEMORY_FILE, 'r') as f
+            memory = json.load(f)
+        return memory.get(user_id, {}).get(key)
+    return None

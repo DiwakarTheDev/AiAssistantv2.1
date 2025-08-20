@@ -1,0 +1,24 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["hello", "hi", "hey", "good morning", "good evening"],
+      "responses": ["Hello!", "Hi there!", "Greetings!"]
+    },
+    {
+      "tag": "save_info",
+      "patterns": ["remember my birthday is 10-12-1995", "my name is John", "save my address as 123 street"],
+      "responses": ["Got it, I've saved that info for you."]
+    },
+    {
+      "tag": "retrieve_info",
+      "patterns": ["when is my birthday", "what is my name", "where do I live"],
+      "responses": ["Here is what I have saved for you:"]
+    },
+    {
+      "tag": "bye",
+      "patterns": ["bye", "goodbye", "see you later"],
+      "responses": ["Goodbye!", "See you soon!", "Take care!"]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+from sentence_transformers import SentenceTransformer
+import re
+import wikipedia
+
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+def get_sentence_embedding(sentence: str):
+    return embedding_model.encode(sentence)
+
+def extract_slots(text):
+    slots = {}
+    date_match = re.search(r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b", text)
+    if date_match:
+        slots["date"] = date_match.group(0)
+    name_match = re.search(r"\b[A-Z][a-z]+\b", text)
+    if name_match:
+        slots["name"] = name_match.group(0)
+    return slots
+
+def search_wikipedia(query):
+    try:
+        summary = wikipedia.summary(query, sentences=2)
+        return summary
+    except Exception:
+        return None

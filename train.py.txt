@@ -1,0 +1,65 @@
+import torch
+from torch.utils.data import DataLoader, random_split
+import torch.nn.functional as F
+from model import IntentClassifier
+from dataset import IntentDataset
+from config import *
+import numpy as np
+
+def train():
+    dataset = IntentDataset(INTENTS_PATH)
+    n_samples = len(dataset)
+    n_train = int(n_samples * 0.8)
+    n_val = n_samples - n_train
+    train_ds, val_ds = random_split(dataset, [n_train, n_val])
+    
+    train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
+    val_dl = DataLoader(val_ds, batch_size=BATCH_SIZE)
+    
+    model = IntentClassifier(EMBEDDING_DIM, HIDDEN_SIZE, len(dataset.intent2idx)).to(DEVICE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    
+    best_val_loss = float("inf")
+    patience_counter = 0
+    
+    for epoch in range(EPOCHS):
+        model.train()
+        total_loss = 0
+        for xb, yb in train_dl:
+            xb, yb = xb.to(DEVICE), yb.to(DEVICE)
+            out = model(xb)
+            loss = F.cross_entropy(out, yb)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        
+        avg_train_loss = total_loss / len(train_dl)
+        
+        model.eval()
+        val_loss = 0
+        with torch.no_grad():
+            for xb, yb in val_dl:
+                xb, yb = xb.to(DEVICE), yb.to(DEVICE)
+                out = model(xb)
+                loss = F.cross_entropy(out, yb)
+                val_loss += loss.item()
+        avg_val_loss = val_loss / len(val_dl)
+        
+        print(f"Epoch {epoch+1}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
+
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            patience_counter = 0
+            torch.save(model.state_dict(), "best_model.pth")
+            print("Model saved.")
+        else:
+            patience_counter += 1
+            if patience_counter >= PATIENCE:
+                print("Early stopping triggered.")
+                break
+    
+    print("Training completed.")
+
+if __name__ == "__main__":
+    train()

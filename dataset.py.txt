@@ -1,0 +1,25 @@
+import torch
+from torch.utils.data import Dataset
+from nlp_utils import get_sentence_embedding
+import json
+
+class IntentDataset(Dataset):
+    def __init__(self, intents_path):
+        with open(intents_path) as f:
+            data = json.load(f)
+        self.samples = []
+        self.labels = []
+        self.intent2idx = {}
+
+        for idx, intent in enumerate(data["intents"]):
+            self.intent2idx[intent["tag"]] = idx
+            for pattern in intent["patterns"]:
+                emb = get_sentence_embedding(pattern)
+                self.samples.append(torch.tensor(emb, dtype=torch.float32))
+                self.labels.append(idx)
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        return self.samples[idx], self.labels[idx]

@@ -1,0 +1,10 @@
+INTENTS_PATH = "intents.json"
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_DIM = 384
+HIDDEN_SIZE = 32
+BATCH_SIZE = 16
+LEARNING_RATE = 1e-3
+EPOCHS = 50
+PATIENCE = 10
+DEVICE = "cuda" if __import__('torch').cuda.is_available() else "cpu"
+MEMORY_FILE = "user_memory.json"

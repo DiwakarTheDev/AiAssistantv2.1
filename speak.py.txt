@@ -1,0 +1,10 @@
+import pyttsx3
+
+def Say(text)
+    engine = pyttsx3.init(sapi5)
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[1].id)
+    engine.setProperty('rate', 140)
+    print(fAssistant {text})
+    engine.say(text)
+    engine.runAndWait()

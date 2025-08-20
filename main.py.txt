@@ -1,0 +1,76 @@
+import torch
+from model import IntentClassifier
+from nlp_utils import get_sentence_embedding, extract_slots, search_wikipedia
+from memory import save_memory, load_memory
+from config import *
+import json
+from listen import Listen
+from speak import Say
+
+def load_intents(path):
+    with open(path) as f:
+        data = json.load(f)
+    return data
+
+def predict_intent(model, sentence, intent2idx):
+    emb = get_sentence_embedding(sentence)
+    tensor_emb = torch.tensor(emb, dtype=torch.float32).unsqueeze(0).to(DEVICE)
+    model.eval()
+    with torch.no_grad():
+        out = model(tensor_emb)
+    probs = torch.softmax(out, dim=1)
+    conf, pred = torch.max(probs, dim=1)
+    return pred.item(), conf.item()
+
+def run_chatbot():
+    user_id = "default_user"
+    intents = load_intents(INTENTS_PATH)
+    intent2idx = {intent["tag"]: idx for idx, intent in enumerate(intents["intents"])}
+    idx2intent = {v: k for k, v in intent2idx.items()}
+    
+    model = IntentClassifier(EMBEDDING_DIM, HIDDEN_SIZE, len(intent2idx)).to(DEVICE)
+    model.load_state_dict(torch.load("best_model.pth", map_location=DEVICE))
+    
+    Say("Assistant activated. Say 'quit' to exit.")
+    
+    while True:
+        sentence = Listen()
+        if sentence is None or sentence.lower() == "quit":
+            Say("Goodbye!")
+            break
+        
+        intent_idx, confidence = predict_intent(model, sentence, intent2idx)
+        intent_tag = idx2intent[intent_idx]
+        slots = extract_slots(sentence)
+        
+        if intent_tag == "save_info":
+            for key, val in slots.items():
+                save_memory(user_id, key, val)
+            Say("Information saved.")
+            continue
+        
+        if intent_tag == "retrieve_info":
+            for key in slots.keys():
+                value = load_memory(user_id, key)
+                if value:
+                    Say(f"Your {key} is {value}.")
+                else:
+                    Say(f"I don't have your {key} saved.")
+            continue
+        
+        if confidence < 0.5:
+            wiki_result = search_wikipedia(sentence)
+            if wiki_result:
+                Say(wiki_result)
+            else:
+                Say("Sorry, I didn't understand. Could you please rephrase?")
+            continue
+        
+        for intent in intents["intents"]:
+            if intent["tag"] == intent_tag:
+                response = intent["responses"][0]
+                Say(response)
+                break
+
+if __name__ == "__main__":
+    run_chatbot()
