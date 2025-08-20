@@ -53,23 +53,22 @@ text
 
 1. Clone the repository:
 
-git clone https://github.com/YourUsername/AiAssistantV2.1.git
+git clone https://github.com/DiwakarTheDev/AiAssistantV2.1.git
 cd AiAssistantV2.1
 
-text
+
 
 2. Install dependencies:
 
 pip install -r requirements.txt
 
-text
+
 
 3. Download NLTK resources (if needed):
 
 import nltk
 nltk.download('punkt')
 
-text
 
 ---
 
